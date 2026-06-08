@@ -1,0 +1,30 @@
+# claude-skill-readme-writer
+
+> A Claude Code skill (Python, MIT, v0.1.0) that writes and improves human-facing READMEs — the single canonical entrance where humans, search, and AI Overviews land. The human-surface counterpart to claude-skill-llms-txt-writer. Splits README quality into deterministic structural lint (`readme_lint.py`) and a holistic, never-scored LLM semantic review, per AKC ADR-0008 "Code-LLM Layering".
+
+## Core documentation
+
+- [llms-full.txt](llms-full.txt): self-contained Q&A reference for AI agents (Project Facts, when to use, the code-LLM split, why no score)
+- [README.md](README.md): human-facing narrative (install, how it works, structural checks, when to use)
+- [SKILL.md](skills/readme-writer/SKILL.md): full skill specification — when to use, structural-vs-semantic ownership, code-filter → LLM → human-gate workflow, anti-patterns
+- [CHANGELOG.md](CHANGELOG.md): release notes (v0.1.0 initial release)
+
+## Architecture
+
+- [scripts/readme_lint.py](skills/readme-writer/scripts/readme_lint.py): deterministic structural linter (stdlib only) — checks single_h1, heading_levels, alt_text, local_link; emits concrete issues (never a score); text or `--json` output; exit code 0/1/2 as the code-owned gate
+- [pyproject.toml](skills/readme-writer/pyproject.toml): Python 3.11+, no runtime dependencies
+- [tests/test_readme_lint.py](skills/readme-writer/tests/test_readme_lint.py): 59 passing unit + integration tests
+- [fixtures/](skills/readme-writer/fixtures/): `sample_clean.md` (0 issues), `sample_issues.md` (multiple issues) — worked examples
+- [inspiration.md](skills/readme-writer/inspiration.md): origin story and canonical pointers, kept out of SKILL.md for portability
+
+## Grounding
+
+- AKC ADR-0008 "Code-LLM Layering": code owns structural determinism, LLM owns meaning — [agent-knowledge-cycle](https://github.com/shimo4228/agent-knowledge-cycle), concept DOI 10.5281/zenodo.19200726
+- Authorship Strategy ADR-0006 (LLM-first ingest, dual entry points): this skill covers the third, human-facing surface the two LLM-facing halves do not — [authorship-strategy](https://github.com/shimo4228/authorship-strategy), concept DOI 10.5281/zenodo.20263316
+
+## Sibling skills
+
+- [claude-skill-llms-txt-writer](https://github.com/shimo4228/claude-skill-llms-txt-writer): the AI-surface counterpart — writes `llms.txt` / `llms-full.txt` with the research-backed `geo_check.py` scorer
+- [claude-skill-jsonld-knowledge-graph](https://github.com/shimo4228/claude-skill-jsonld-knowledge-graph): companion JSON-LD graph for the concept surface
+- [claude-skill-context-sync](https://github.com/shimo4228/claude-skill-context-sync): audits cross-surface fact consistency (README ↔ machine layer)
+- [claude-skill-writing-ecosystem](https://github.com/shimo4228/claude-skill-writing-ecosystem): orchestrator for long-form human prose (articles, essays)

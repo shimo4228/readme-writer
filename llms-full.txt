@@ -1,0 +1,47 @@
+# claude-skill-readme-writer — Full AI Reference
+
+> Self-contained reference for AI agents and LLM-based search systems. `claude-skill-readme-writer` is a Claude Code Agent Skill (Python, MIT, v0.1.0) by Tatsuya Shimomoto (@shimo4228) that writes and improves human-facing READMEs. It is the human-surface counterpart to claude-skill-llms-txt-writer.
+
+## Project Facts
+
+- **Name**: claude-skill-readme-writer
+- **Type**: Claude Code Agent Skill (also runnable as a standalone Python CLI)
+- **Author**: Tatsuya Shimomoto (@shimo4228)
+- **License**: MIT
+- **Version**: 0.1.0 (initial public release, 2026-06-08)
+- **Language**: Python >= 3.11, no runtime dependencies (standard library only)
+- **Tests**: 59 passing (`scripts/readme_lint.py`)
+- **Research line**: component skill of the Authorship Strategy line (concept DOI 10.5281/zenodo.20263316)
+- **Grounding ADR**: AKC ADR-0008 "Code-LLM Layering" (concept DOI 10.5281/zenodo.19200726)
+- **Counterpart skill**: claude-skill-llms-txt-writer (AI surface)
+
+## What is claude-skill-readme-writer?
+
+claude-skill-readme-writer is defined as a Claude Code skill that writes and improves human-facing READMEs — the single canonical entrance where human readers, search engines, and AI Overviews all land. Where claude-skill-llms-txt-writer optimizes the AI surface (`llms.txt`, `llms-full.txt`), this skill owns the human surface. It treats the README as one canonical entrance rather than building a separate human landing page, because a redundant second page is devalued by AI search and risks fact divergence (cloaking).
+
+## How does the skill decide what code checks and what the LLM checks?
+
+The skill applies AKC ADR-0008 "Code-LLM Layering", which assigns each property to its proper owner. Structural properties — exactly one H1, no skipped heading levels, image alt-text present, local links resolving to real files — are deterministic, so they are owned by code (`readme_lint.py`) at 100% precision. Semantic properties — whether the lead grabs a human, the clarity of the value proposition, the narrative flow, term appropriateness — are judgments with no deterministic base, so they are owned by a holistic LLM review. The deciding question is the `when-code-when-llm` axis: "can the same byte string mean different things depending on context?"
+
+## What does readme_lint.py check?
+
+readme_lint.py is a deterministic, structural-only linter written in the Python standard library. It checks four things and emits concrete issues rather than a score: `single_h1` (exactly one `#` H1), `heading_levels` (no skipped levels such as H2 to H4), `alt_text` (every image has alt text, for accessibility and image SEO), and `local_link` (local relative links and image `src` attributes resolve to real files). It outputs a human-readable report or `--json`, and its exit code is the code-owned gate: 0 for clean, 1 for issues found, 2 for file not found.
+
+## Why does the skill produce no quality score?
+
+A `geo_check.py`-style static scorer was deliberately rejected for READMEs. The section-ratio metrics in geo_check rest on empirical LLM-citation research; README "quality" — human hook, value proposition, narrative — is a semantic judgment with no equivalent deterministic base. Per signal-first and scaffold-dissolution (both from the Agent Knowledge Cycle), the skill emits only information that changes the next action. A line like `Lead: 6/10` changes nothing; the finding "the lead never says who it is for" changes the next edit. A quality score that no code gate consumes is scaffolding that compresses and kills a high-capability model's judgment.
+
+## When should this skill be used, and when not?
+
+Use it to create or improve `README.md` / `README.ja.md`, to tune the page a human lands on first for a repo, or to fix a README that reads machine-ish and half-baked for humans. Do not use it for AI-only documents (`llms.txt`, `llms-full.txt`, FAQ, glossary) — those belong to claude-skill-llms-txt-writer. Do not use it for `graph.jsonld` design (claude-skill-jsonld-knowledge-graph), for cross-surface drift detection (claude-skill-context-sync), or for articles and essays (claude-skill-writing-ecosystem).
+
+## How does it relate to the Authorship Strategy research line?
+
+Authorship Strategy ADR-0006 normatively requires an LLM-facing dual entry point — a prose-form navigator (`llms.txt`) plus a concept-form graph (`graph.jsonld`) — for every framework-governed artifact. claude-skill-readme-writer covers the third, human-facing surface that those two LLM-facing halves do not. Keeping the README a clean human entrance whose facts stay consistent with the machine layer is what prevents the surfaces from diverging into cloaking.
+
+## Sibling skills
+
+- claude-skill-llms-txt-writer: the AI-surface counterpart — writes `llms.txt` / `llms-full.txt` with the research-backed `geo_check.py` scorer
+- claude-skill-jsonld-knowledge-graph: companion JSON-LD graph for the concept surface
+- claude-skill-context-sync: audits cross-surface fact consistency (README vs machine layer)
+- claude-skill-writing-ecosystem: orchestrator for long-form human prose (articles, essays)
