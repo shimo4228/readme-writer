@@ -1,6 +1,6 @@
-# claude-skill-readme-writer
+# readme-writer
 
-An [Agent Skill](https://agentskills.io/specification) that writes and improves **human-facing READMEs** — the single canonical entrance where humans, search, and AI Overviews all land. It is the human-surface counterpart to [`claude-skill-llms-txt-writer`](https://github.com/shimo4228/claude-skill-llms-txt-writer): that skill optimizes the AI surface (`llms.txt` / `llms-full.txt`), this one owns the human surface.
+An [Agent Skill](https://agentskills.io/specification) that writes and improves **human-facing READMEs** — the single canonical entrance where humans, search, and AI Overviews all land. It is the human-surface counterpart to [`llms-txt-writer`](https://github.com/shimo4228/llms-txt-writer): that skill optimizes the AI surface (`llms.txt` / `llms-full.txt`), this one owns the human surface.
 
 The skill splits README quality into two kinds of property and gives each its proper owner, following **AKC ADR-0008 "Code-LLM Layering"**:
 
@@ -19,7 +19,7 @@ cp -r skills/readme-writer ~/.claude/skills/readme-writer
 ### SkillsMP
 
 ```bash
-/skills add shimo4228/claude-skill-readme-writer
+/skills add shimo4228/readme-writer
 ```
 
 ## How It Works
@@ -28,7 +28,7 @@ The workflow is the AKC layering pattern: **code filter → LLM review → human
 
 1. **Code filter — `readme_lint.py`** (deterministic, structural only). Emits concrete issues, not a score.
 2. **LLM holistic review** (rubric-as-lens, never scored). Claude reads the README and returns direct findings plus small `y/n` diffs.
-3. **Fact-consistency check** is delegated to [`context-sync`](https://github.com/shimo4228/claude-skill-context-sync) — the README must not diverge from `llms.txt` / `graph.jsonld` (diverging content is cloaking).
+3. **Fact-consistency check** is delegated to [`context-sync`](https://github.com/shimo4228/context-sync) — the README must not diverge from `llms.txt` / `graph.jsonld` (diverging content is cloaking).
 4. **Human gate** — diffs are approved and applied by a human.
 
 ```bash
@@ -61,9 +61,9 @@ A `geo_check.py`-style static scorer was deliberately **rejected** for READMEs. 
 - Fixing a README that reads "machine-ish and half-baked for humans"
 
 **Do not use for:**
-- `llms.txt` / `llms-full.txt` / FAQ / glossary → [`claude-skill-llms-txt-writer`](https://github.com/shimo4228/claude-skill-llms-txt-writer)
-- `graph.jsonld` design → [`claude-skill-jsonld-knowledge-graph`](https://github.com/shimo4228/claude-skill-jsonld-knowledge-graph)
-- Cross-surface drift detection / sync → [`claude-skill-context-sync`](https://github.com/shimo4228/claude-skill-context-sync)
+- `llms.txt` / `llms-full.txt` / FAQ / glossary → [`llms-txt-writer`](https://github.com/shimo4228/llms-txt-writer)
+- `graph.jsonld` design → [`jsonld-knowledge-graph`](https://github.com/shimo4228/jsonld-knowledge-graph)
+- Cross-surface drift detection / sync → [`context-sync`](https://github.com/shimo4228/context-sync)
 - Articles / essays / blog posts → [`claude-skill-writing-ecosystem`](https://github.com/shimo4228/claude-skill-writing-ecosystem)
 
 ## Requirements
@@ -79,9 +79,9 @@ cd skills/readme-writer && uv run pytest -v  # 59 tests
 
 ## Related skills (siblings)
 
-- [`claude-skill-llms-txt-writer`](https://github.com/shimo4228/claude-skill-llms-txt-writer) — the AI-surface counterpart (writes `llms.txt` / `llms-full.txt` with the research-backed `geo_check.py` scorer)
-- [`claude-skill-jsonld-knowledge-graph`](https://github.com/shimo4228/claude-skill-jsonld-knowledge-graph) — companion JSON-LD graph for the concept surface
-- [`claude-skill-context-sync`](https://github.com/shimo4228/claude-skill-context-sync) — audits cross-surface fact consistency (README ↔ machine layer)
+- [`llms-txt-writer`](https://github.com/shimo4228/llms-txt-writer) — the AI-surface counterpart (writes `llms.txt` / `llms-full.txt` with the research-backed `geo_check.py` scorer)
+- [`jsonld-knowledge-graph`](https://github.com/shimo4228/jsonld-knowledge-graph) — companion JSON-LD graph for the concept surface
+- [`context-sync`](https://github.com/shimo4228/context-sync) — audits cross-surface fact consistency (README ↔ machine layer)
 - [`claude-skill-writing-ecosystem`](https://github.com/shimo4228/claude-skill-writing-ecosystem) — orchestrator for long-form human prose (articles, essays)
 
 ## About this skill
@@ -96,7 +96,7 @@ MIT
 
 ## 日本語
 
-人間（と、人間が着地する検索 / AI Overviews）に向けた README を書く・改善するスキルです。AI surface（`llms.txt` / `llms-full.txt`）を担う [`llms-txt-writer`](https://github.com/shimo4228/claude-skill-llms-txt-writer) に対し、本 skill は **人間 surface の単一正準入口**を担います。
+人間（と、人間が着地する検索 / AI Overviews）に向けた README を書く・改善するスキルです。AI surface（`llms.txt` / `llms-full.txt`）を担う [`llms-txt-writer`](https://github.com/shimo4228/llms-txt-writer) に対し、本 skill は **人間 surface の単一正準入口**を担います。
 
 README 品質には 2 種類の property が混在します。**AKC ADR-0008「Code-LLM Layering」**に従い所有者を分けます:
 

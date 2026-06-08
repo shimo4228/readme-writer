@@ -1,6 +1,7 @@
 ---
 name: readme-writer
 description: 人間向け README（人間 + 検索 + AI Overviews が着地する単一正準入口）を書く・改善するスキル。llms-txt-writer の人間版。構造的衛生（H1 単一・見出しレベル・alt-text・ローカルリンク健全性）は決定論的な readme_lint で検査し、意味的品質（lead が人を掴むか・価値提案の明快さ・物語の流れ）は LLM のホリスティック review で扱う。後者にスコアは付けない。AI 専用 doc（llms.txt 等）には使わない。
+compatibility: Requires Python 3.11+ and uv. Developed and tested on Claude Code; portable to other Agent Skills-compatible agents.
 user-invocable: true
 origin: shimo4228
 ---

@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Changed
+- Repository renamed to drop the `claude-skill-` prefix. This skill follows the
+  open Agent Skills standard and is not Claude-specific; the old name implied
+  otherwise. The previous URL redirects to the new one.
+- Added a `compatibility` frontmatter field (per the Agent Skills spec).
+- Updated sibling cross-references to the renamed sibling repositories.
+
 ## [0.1.0] — 2026-06-08
 
 Initial public release.
@@ -11,7 +20,7 @@ Initial public release.
 An [Agent Skill](https://agentskills.io/specification) that writes and improves
 human-facing READMEs — the single canonical entrance where humans, search, and
 AI Overviews land. The human-surface counterpart to
-[claude-skill-llms-txt-writer](https://github.com/shimo4228/claude-skill-llms-txt-writer).
+[llms-txt-writer](https://github.com/shimo4228/llms-txt-writer).
 
 It splits README quality into two properties with separate owners, per
 **AKC ADR-0008 "Code-LLM Layering"**:

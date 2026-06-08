@@ -1,6 +1,6 @@
-# claude-skill-readme-writer
+# readme-writer
 
-> A Claude Code skill (Python, MIT, v0.1.0) that writes and improves human-facing READMEs — the single canonical entrance where humans, search, and AI Overviews land. The human-surface counterpart to claude-skill-llms-txt-writer. Splits README quality into deterministic structural lint (`readme_lint.py`) and a holistic, never-scored LLM semantic review, per AKC ADR-0008 "Code-LLM Layering".
+> A Claude Code skill (Python, MIT, v0.1.0) that writes and improves human-facing READMEs — the single canonical entrance where humans, search, and AI Overviews land. The human-surface counterpart to llms-txt-writer. Splits README quality into deterministic structural lint (`readme_lint.py`) and a holistic, never-scored LLM semantic review, per AKC ADR-0008 "Code-LLM Layering".
 
 ## Core documentation
 
@@ -24,7 +24,7 @@
 
 ## Sibling skills
 
-- [claude-skill-llms-txt-writer](https://github.com/shimo4228/claude-skill-llms-txt-writer): the AI-surface counterpart — writes `llms.txt` / `llms-full.txt` with the research-backed `geo_check.py` scorer
-- [claude-skill-jsonld-knowledge-graph](https://github.com/shimo4228/claude-skill-jsonld-knowledge-graph): companion JSON-LD graph for the concept surface
-- [claude-skill-context-sync](https://github.com/shimo4228/claude-skill-context-sync): audits cross-surface fact consistency (README ↔ machine layer)
+- [llms-txt-writer](https://github.com/shimo4228/llms-txt-writer): the AI-surface counterpart — writes `llms.txt` / `llms-full.txt` with the research-backed `geo_check.py` scorer
+- [jsonld-knowledge-graph](https://github.com/shimo4228/jsonld-knowledge-graph): companion JSON-LD graph for the concept surface
+- [context-sync](https://github.com/shimo4228/context-sync): audits cross-surface fact consistency (README ↔ machine layer)
 - [claude-skill-writing-ecosystem](https://github.com/shimo4228/claude-skill-writing-ecosystem): orchestrator for long-form human prose (articles, essays)
