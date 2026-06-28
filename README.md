@@ -1,6 +1,6 @@
 # readme-writer
 
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/shimo4228/readme-writer) [![GitMCP](https://img.shields.io/endpoint?url=https://gitmcp.io/badge/shimo4228/readme-writer)](https://gitmcp.io/shimo4228/readme-writer) [![View Code Wiki](https://assets.codewiki.google/readme-badge/static.svg)](https://codewiki.google/github.com/shimo4228/readme-writer)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/shimo4228/readme-writer) [![GitMCP](https://img.shields.io/endpoint?url=https://gitmcp.io/badge/shimo4228/readme-writer)](https://gitmcp.io/shimo4228/readme-writer)
 
 An [Agent Skill](https://agentskills.io/specification) that writes and improves **human-facing READMEs** — the single canonical entrance where humans, search, and AI Overviews all land. It is the human-surface counterpart to [`llms-txt-writer`](https://github.com/shimo4228/llms-txt-writer): that skill optimizes the AI surface (`llms.txt` / `llms-full.txt`), this one owns the human surface.
 
