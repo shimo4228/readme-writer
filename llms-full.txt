@@ -1,47 +1,69 @@
 # readme-writer — Full AI Reference
 
-> Self-contained reference for AI agents and LLM-based search systems. `readme-writer` is a Claude Code Agent Skill (Python, MIT, v0.1.0) by Tatsuya Shimomoto (@shimo4228) that writes and improves human-facing READMEs. It is the human-surface counterpart to llms-txt-writer.
+> Self-contained reference for AI agents and LLM-based search systems. `readme-writer` is an Agent Skill (Python, MIT, v0.2.0) by Tatsuya Shimomoto (@shimo4228) that writes and repairs human-facing READMEs. It is the human-surface counterpart to llms-txt-writer.
 
 ## Project Facts
 
 - **Name**: readme-writer
-- **Type**: Claude Code Agent Skill (also runnable as a standalone Python CLI)
+- **Type**: Agent Skill (Claude Code), with a standalone Python evidence extractor
 - **Author**: Tatsuya Shimomoto (@shimo4228)
 - **License**: MIT
-- **Version**: 0.1.0 (initial public release, 2026-06-08)
+- **Version**: 0.2.0 (2026-08-20; evidence + fresh-context judge redesign). 0.1.0 (2026-06-08) was the initial lint-based release
 - **Language**: Python >= 3.11, no runtime dependencies (standard library only)
-- **Tests**: 59 passing (`scripts/readme_lint.py`)
+- **Components**: `scripts/readme_evidence.py`, `references/readme-judge-checklist.md` (+ visual / ja-register / about references), `tests/`, `fixtures/`, `evals/fixtures/`
+- **Companion agents** (published in claude-harness, not in this repo): `readme-judge`, `readme-reviewer`, `readme-clarity-reviewer`
 - **Research line**: component skill of the Authorship Strategy line (concept DOI 10.5281/zenodo.20263316)
 - **Grounding ADR**: AKC ADR-0008 "Code-LLM Layering" (concept DOI 10.5281/zenodo.19200726)
 - **Counterpart skill**: llms-txt-writer (AI surface)
 
 ## What is readme-writer?
 
-readme-writer is defined as a Claude Code skill that writes and improves human-facing READMEs — the single canonical entrance where human readers, search engines, and AI Overviews all land. Where llms-txt-writer optimizes the AI surface (`llms.txt`, `llms-full.txt`), this skill owns the human surface. It treats the README as one canonical entrance rather than building a separate human landing page, because a redundant second page is devalued by AI search and risks fact divergence (cloaking).
+readme-writer is defined as an Agent Skill that writes and repairs the README: the page a visitor opens first, and the one surface an LLM is guaranteed to ground on when a repo URL is pasted into a chat or surfaced by AI search. Where llms-txt-writer optimizes the AI-only surface (`llms.txt`, `llms-full.txt`), this skill owns the human surface. It treats the README as the single canonical human entrance rather than building a separate landing page, because a redundant second page is devalued by AI search and risks fact divergence (cloaking).
 
-## How does the skill decide what code checks and what the LLM checks?
+## Why does the skill exist?
 
-The skill applies AKC ADR-0008 "Code-LLM Layering", which assigns each property to its proper owner. Structural properties — exactly one H1, no skipped heading levels, image alt-text present, local links resolving to real files — are deterministic, so they are owned by code (`readme_lint.py`) at 100% precision. Semantic properties — whether the lead grabs a human, the clarity of the value proposition, the narrative flow, term appropriateness — are judgments with no deterministic base, so they are owned by a holistic LLM review. The deciding question is the `when-code-when-llm` axis: "can the same byte string mean different things depending on context?"
+READMEs grow by accretion: each release adds a bullet, an ADR number, a sibling repository, a coined term. After enough releases a first-time visitor cannot say what the project is for, and an LLM reading only the README cannot reconstruct it. The skill exists to reverse that. Its starting condition is that **the reader must be able to say what the repository is for before any mechanism, install step, or feature list**; if the purpose is not standing, nothing that follows lands. This condition is deliberately not a section template: it may be satisfied by the identity sentence or the lead, and the absence of a "Why this exists" heading is not a defect. The defect is detail starting before purpose.
 
-## What does readme_lint.py check?
+## What is the "information floor"?
 
-readme_lint.py is a deterministic, structural-only linter written in the Python standard library. It checks four things and emits concrete issues rather than a score: `single_h1` (exactly one `#` H1), `heading_levels` (no skipped levels such as H2 to H4), `alt_text` (every image has alt text, for accessibility and image SEO), and `local_link` (local relative links and image `src` attributes resolve to real files). It outputs a human-readable report or `--json`, and its exit code is the code-owned gate: 0 for clean, 1 for issues found, 2 for file not found.
+The floor is the small, non-negotiable set of facts an LLM needs to reconstruct the project from the README text alone (not from images, collapsed blocks, or linked files): (1) an identity sentence readable in isolation; (2) why the project exists, who it is for, and what distinguishes it; (3) canonical facts such as name, stack, status, and for research repos the DOI, how-to-cite, and three to six core concept definitions; (4) exactly one concrete example; (5) a pointer-only link map to deeper docs. If the lead promises an artifact ("the history of how the constitution changed"), the README must provide a reachable destination (link, section, or dated count) in the same change. Everything outside the floor is cut or relocated; the floor must not swell into a disguised llms-full.txt.
+
+## How is quality split between code and the LLM?
+
+Following AKC ADR-0008, countable facts are owned by code and contextual judgment by an LLM. `scripts/readme_evidence.py` extracts evidence as JSON: first-screen line count and new-term count, the identity lead, counts of ADR / sibling-repo / docs references, coined-term candidates with occurrence counts, what each `<details>` block contains, whether each figure is followed by prose, badges, slop words and em-dashes, internal-history lines (versions, model swaps), raw numeric claims, and DOI / citation presence. It produces no score, no severity, no threshold, and no failing exit code (exit 0 always; 2 only when the file is missing or oversized). The `readme-judge` agent reads that JSON as one input among several, reads the README once in a fresh context with no access to the rest of the repository, and owns the verdict.
+
+## How does the judge decide?
+
+The judge answers a fixed checklist with one line of quoted evidence per question: first screen (R1-R3: identity sentence, tagline, canonical facts before rationale), sentence density (R4-R9: singular reader, active voice, concrete over abstract, one reader-question per paragraph, no slop, no hedging), context budget (R10-R14: coined-term budget of about six with first-use glosses, references as pointers not explanations, internal history only where it answers a question, numbers only where interpretable, Quick Start prerequisites disclosed), and six questions generalized from real author findings (K1-K6: as-of consistency, accretion detection, claim logic with a counterexample hunt, unresolved references, missing purpose, promises without destinations). It then runs a refutation pass against its own findings, compares the README against an imagined checklist-perfect version (at least one shortfall must be named even for Publishable), and returns a **named, non-aggregated verdict**: Publishable, Fix (span-level findings only, never a full rewrite), or Rewrite. No numeric score is produced.
+
+## What is the revision loop?
+
+Evidence extraction, then the judge as a draft gate. Publishable admits the draft to the review panel; Fix triggers span-level repairs and one re-judgment with the identical question set; Rewrite stops the loop and returns to the author. The loop is capped at two rounds: beyond that, voice drifts toward corporate About-page prose. The panel (`readme-reviewer` for floor recovery, structure, length, visuals; `readme-clarity-reviewer` for the first-contact reading experience, coined-term load, Japanese register, cross-language parity; optionally a cross-model `codex-review`) returns findings only; the verdict belongs to the judge. After panel findings are folded in, a binding re-judgment with freshly generated questions runs on the frozen candidate; any later edit invalidates it. The author's read-through is always the top gate, and the number of issues the author finds after a Publishable verdict is recorded as the judge's true error rate.
 
 ## Why does the skill produce no quality score?
 
-A `geo_check.py`-style static scorer was deliberately rejected for READMEs. The section-ratio metrics in geo_check rest on empirical LLM-citation research; README "quality" — human hook, value proposition, narrative — is a semantic judgment with no equivalent deterministic base. Per signal-first and scaffold-dissolution (both from the Agent Knowledge Cycle), the skill emits only information that changes the next action. A line like `Lead: 6/10` changes nothing; the finding "the lead never says who it is for" changes the next edit. A quality score that no code gate consumes is scaffolding that compresses and kills a high-capability model's judgment.
+README quality (human hook, value proposition, narrative) is a semantic judgment with no deterministic base equivalent to the citation research behind AI-surface scorers. A line like `Lead: 6/10` changes nothing; the finding "the lead never says who it is for" changes the next edit. Importing AI-surface metrics (entity density, section ratios) into a human README is an anti-pattern that degrades readability. Word-count targets are likewise rejected as unsourced.
+
+## What does the skill say about figures and visuals?
+
+Prose walls are compressed into scannable structure, not into images. Only genuinely graph-shaped content (relations, multi-branch flows) becomes a diagram, preferably Mermaid in top-down orientation; linear three-step processes stay as lists. Every figure carries a one-sentence text equivalent, since text-only extractors and screen readers skip diagrams. Nothing load-bearing lives inside raster images or collapsed `<details>` blocks. Badges are limited to two to four high-signal ones.
+
+## What about Japanese READMEs?
+
+Japanese README body text uses ですます調. This is a deliberate departure from the だ/である register the author's essay skills prescribe: a README is a first meeting, and a chain of assertive である sentences reads as intimidating at the entrance. Tables, headings, and noun-ending cells are exempt. A register table for opening translationese (e.g. 「正本」 into plain phrasing) is in `references/ja-register.md`. Other-language versions keep the same floor, heading hierarchy, anchors, and example, without forcing line-by-line parallelism.
 
 ## When should this skill be used, and when not?
 
-Use it to create or improve `README.md` / `README.ja.md`, to tune the page a human lands on first for a repo, or to fix a README that reads machine-ish and half-baked for humans. Do not use it for AI-only documents (`llms.txt`, `llms-full.txt`, FAQ, glossary) — those belong to llms-txt-writer. Do not use it for `graph.jsonld` design (jsonld-knowledge-graph), for cross-surface drift detection (context-sync), or for articles and essays (claude-skill-writing-ecosystem).
+Use it to create or improve `README.md` / `README.ja.md`, to repair a README that has grown by accretion, to move long rationale and internal history into `docs/`, or to align the GitHub About (description / topics) with the README's claims. Do not use it for AI-only documents (`llms.txt`, `llms-full.txt`, FAQ, glossary), which belong to llms-txt-writer; for `graph.jsonld` design (jsonld-knowledge-graph); for cross-surface drift repair (context-sync); or for articles and essays (claude-skill-writing-ecosystem).
 
 ## How does it relate to the Authorship Strategy research line?
 
-Authorship Strategy ADR-0006 normatively requires an LLM-facing dual entry point — a prose-form navigator (`llms.txt`) plus a concept-form graph (`graph.jsonld`) — for every framework-governed artifact. readme-writer covers the third, human-facing surface that those two LLM-facing halves do not. Keeping the README a clean human entrance whose facts stay consistent with the machine layer is what prevents the surfaces from diverging into cloaking.
+Authorship Strategy ADR-0006 requires an LLM-facing dual entry point (a prose navigator `llms.txt` plus a concept graph `graph.jsonld`) for every framework-governed artifact. readme-writer covers the third, human-facing surface that those two do not, and keeps its facts consistent with the machine layer so the surfaces do not diverge into cloaking.
 
 ## Sibling skills
 
-- llms-txt-writer: the AI-surface counterpart — writes `llms.txt` / `llms-full.txt` with the research-backed `geo_check.py` scorer
+- llms-txt-writer: the AI-surface counterpart (`llms.txt` / `llms-full.txt`)
 - jsonld-knowledge-graph: companion JSON-LD graph for the concept surface
 - context-sync: audits cross-surface fact consistency (README vs machine layer)
 - claude-skill-writing-ecosystem: orchestrator for long-form human prose (articles, essays)
+- llm-as-judge: the judge form this skill's verdict follows
