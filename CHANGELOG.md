@@ -33,6 +33,9 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - A `<details>` tag named in inline code no longer counts as a collapsed block.
+- `install.sh` backs a replaced skill or agent up to `~/.claude/backups/install-<timestamp>/`, not
+  beside the original where the old skill would still load, and no longer backs up an unchanged
+  reinstall (it ignores `.venv` and caches when comparing).
 
 ## [0.2.0] — 2026-08-20
 

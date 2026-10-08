@@ -46,7 +46,8 @@ git clone https://github.com/shimo4228/readme-writer && cd readme-writer
 
 `install.sh` copies the skill to `~/.claude/skills/readme-writer` and the judge agent to
 `~/.claude/agents/readme-judge.md`, then installs the skill's Python dependencies with `uv sync`. An
-existing copy is kept as `*.bak-<timestamp>`; `--dry-run` shows what it would do. You need Python 3.11
+existing copy that differs is moved to `~/.claude/backups/install-<timestamp>/`; `--dry-run` shows
+what it would do. You need Python 3.11
 or later and [uv](https://docs.astral.sh/uv/).
 
 To let the judge also look at the page the way GitHub draws it (desktop and mobile, light and dark),

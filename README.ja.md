@@ -27,7 +27,7 @@ git clone https://github.com/shimo4228/readme-writer && cd readme-writer
 ./install.sh
 ```
 
-`install.sh` は、skill を `~/.claude/skills/readme-writer` に、判定 agent を `~/.claude/agents/readme-judge.md` に写し、`uv sync` で skill の Python の依存を入れます。すでにある版は `*.bak-<日時>` として残し、`--dry-run` で何をするかだけを見られます。Python 3.11 以上と [uv](https://docs.astral.sh/uv/) が要ります。
+`install.sh` は、skill を `~/.claude/skills/readme-writer` に、判定 agent を `~/.claude/agents/readme-judge.md` に写し、`uv sync` で skill の Python の依存を入れます。中身の違う既存の版は `~/.claude/backups/install-<日時>/` に移して残し、`--dry-run` で何をするかだけを見られます。Python 3.11 以上と [uv](https://docs.astral.sh/uv/) が要ります。
 
 GitHub での見え方（パソコンとスマホの幅、明るい表示と暗い表示）も判定 agent に見せるときは、GitHub CLI にログインし（`gh auth login`）、`~/.claude/skills/readme-writer` でブラウザを 1 回入れます（`uv run playwright install chromium`）。これが無ければ、判定は文面だけで行います。[SkillsMP](https://skillsmp.com) のマーケットプレイスから入れる場合（`/skills add shimo4228/readme-writer`）は skill だけが入るので、`agents/readme-judge.md` を `~/.claude/agents/` に自分で写してください。
 

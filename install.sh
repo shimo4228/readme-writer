@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # install.sh — bundle this repo's skills AND agents into ~/.claude
-# Idempotent. Backs up any pre-existing target before overwriting (default).
+# Idempotent. Backs up any pre-existing target before overwriting (default), into
+# ~/.claude/backups/install-<ts>/ — outside skills/ and agents/, so a backup is never loaded.
 #
-#   ./install.sh            # install; back up replaced files to *.bak-<ts>
+#   ./install.sh            # install; back up replaced files under backups/install-<ts>/
 #   ./install.sh --force    # overwrite without backups
 #   ./install.sh --dry-run  # print what would happen, change nothing
 set -eu
@@ -15,6 +16,7 @@ CLAUDE_DIR="${CLAUDE_HOME:-$HOME/.claude}"
 SKILLS_DST="$CLAUDE_DIR/skills"
 AGENTS_DST="$CLAUDE_DIR/agents"
 TS=$(date +%Y%m%d-%H%M%S)
+BACKUP_DIR="$CLAUDE_DIR/backups/install-$TS"
 
 FORCE=0
 DRY=0
@@ -30,17 +32,20 @@ done
 run()  { if [ "$DRY" -eq 1 ]; then echo "  [dry-run] $*"; else "$@"; fi; }
 say()  { printf '%s\n' "$*"; }
 
-# Identical content? skip entirely (true idempotency, no spurious .bak).
+# Identical content? skip entirely (true idempotency, no spurious backup). What uv sync and test
+# runs create in an installed skill (.venv, caches) is not part of the content.
 same() {
   # $1 = src (file or dir), $2 = dst
   [ -e "$2" ] || return 1
-  diff -rq "$1" "$2" >/dev/null 2>&1
+  diff -rq -x .venv -x __pycache__ -x .pytest_cache -x .ruff_cache "$1" "$2" >/dev/null 2>&1
 }
 
 backup() {
-  # $1 = existing target to preserve
-  bak="$1.bak-$TS"
+  # $1 = existing target to preserve. Moved out of skills/ and agents/: a folder left beside the
+  # original with its SKILL.md would load as a second skill of the same name.
+  bak="$BACKUP_DIR/${1#"$CLAUDE_DIR"/}"
   say "  backup: $1 -> $bak"
+  run mkdir -p "$(dirname "$bak")"
   run mv "$1" "$bak"
 }
 
@@ -111,5 +116,5 @@ say ""
 if [ "$DRY" -eq 1 ]; then
   say "Dry run complete. No changes made."
 else
-  say "Done. Backed-up files (if any) are alongside the originals as *.bak-$TS."
+  if [ -d "$BACKUP_DIR" ]; then say "Done. Replaced files were backed up to $BACKUP_DIR."; else say "Done."; fi
 fi
