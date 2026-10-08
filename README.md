@@ -159,7 +159,7 @@ The evidence command always exits 0 (2 only for a missing or oversized file); th
 **Where to read more.** In Japanese: [SKILL.md](skills/readme-writer/SKILL.md) (the procedure),
 [references/readme-judge-checklist.md](skills/readme-writer/references/readme-judge-checklist.md)
 (the judge's checklist), [references/](skills/readme-writer/references/) (diagrams, Japanese register,
-About fields, visitor read). In English: [inspiration.md](skills/readme-writer/inspiration.md) (design sources),
+About fields, visitor read, tagline eval). In English: [inspiration.md](skills/readme-writer/inspiration.md) (design sources),
 [llms.txt](llms.txt) and [llms-full.txt](llms-full.txt). The skill is part of the
 [Authorship Strategy](https://github.com/shimo4228/authorship-strategy) line
 ([DOI 10.5281/zenodo.20263316](https://doi.org/10.5281/zenodo.20263316)); its code-counts,
