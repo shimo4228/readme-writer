@@ -19,7 +19,8 @@
 - [tests/test_readme_evidence.py](skills/readme-writer/tests/test_readme_evidence.py): unit + integration tests over the extractor
 - [fixtures/](skills/readme-writer/fixtures/) and [evals/fixtures/](skills/readme-writer/evals/fixtures/): clean and issue-laden sample READMEs, plus pre-rewrite real READMEs with expected judge findings for smoke-testing the judge
 - [inspiration.md](skills/readme-writer/inspiration.md): design sources and calibration notes, kept out of SKILL.md for portability
-- The judge agent `readme-judge` is published in [claude-harness](https://github.com/shimo4228/claude-harness) as `agents/readme-judge.md`; it is the only agent the skill uses
+- [agents/readme-judge.md](agents/readme-judge.md): the judge agent, the only agent the skill uses (bundled; its source of truth is maintained in [claude-harness](https://github.com/shimo4228/claude-harness))
+- [install.sh](install.sh): installs the skill and the agent into `~/.claude` and runs `uv sync`; idempotent, backs up existing copies, `--dry-run` to preview
 
 ## Grounding
 

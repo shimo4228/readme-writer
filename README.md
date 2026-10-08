@@ -40,22 +40,21 @@ said where they stopped reading: an unexplained paid API key and no example of t
 ## Install
 
 ```bash
-# the skill
-mkdir -p ~/.claude/skills ~/.claude/agents
 git clone https://github.com/shimo4228/readme-writer && cd readme-writer
-cp -r skills/readme-writer ~/.claude/skills/readme-writer
-cd ~/.claude/skills/readme-writer && uv sync
-
-# the judge agent, from claude-harness (one file)
-curl -o ~/.claude/agents/readme-judge.md \
-  https://raw.githubusercontent.com/shimo4228/claude-harness/main/agents/readme-judge.md
+./install.sh
 ```
 
-Python 3.11 or later and [uv](https://docs.astral.sh/uv/). To let the judge also look at the page the
-way GitHub draws it (desktop and mobile, light and dark), sign in to the GitHub CLI (`gh auth login`)
-and install the browser once: `uv run playwright install chromium`. Without these the judge works from
-the text alone. Installing from the [SkillsMP](https://skillsmp.com) marketplace
-(`/skills add shimo4228/readme-writer`) copies the skill but not the agent.
+`install.sh` copies the skill to `~/.claude/skills/readme-writer` and the judge agent to
+`~/.claude/agents/readme-judge.md`, then installs the skill's Python dependencies with `uv sync`. An
+existing copy is kept as `*.bak-<timestamp>`; `--dry-run` shows what it would do. You need Python 3.11
+or later and [uv](https://docs.astral.sh/uv/).
+
+To let the judge also look at the page the way GitHub draws it (desktop and mobile, light and dark),
+sign in to the GitHub CLI (`gh auth login`) and install the browser once, from
+`~/.claude/skills/readme-writer`: `uv run playwright install chromium`. Without these the judge works
+from the text alone. Installing from the [SkillsMP](https://skillsmp.com) marketplace
+(`/skills add shimo4228/readme-writer`) copies the skill only; copy `agents/readme-judge.md` to
+`~/.claude/agents/` yourself.
 
 ## Use
 
@@ -106,8 +105,8 @@ unreleased changes listed in [CHANGELOG.md](CHANGELOG.md)) that writes, rewrites
 in step the human-facing README of a repository, and the GitHub About fields that summarize it. It is
 the human-facing counterpart of llms-txt-writer, which writes pages meant only for AI.
 
-**Requirements.** Claude Code, Python 3.11 or later and uv; the `readme-judge` agent file from
-claude-harness; optionally an authenticated GitHub CLI and Playwright's Chromium for render evidence.
+**Requirements.** Claude Code, Python 3.11 or later and uv; the `readme-judge` agent, bundled in
+`agents/` (`install.sh` installs the skill and the agent together); optionally an authenticated GitHub CLI and Playwright's Chromium for render evidence.
 No paid API key beyond the Claude Code plan.
 
 **Why it exists.** READMEs grow by accretion: each release adds a bullet, a design-record number, a
@@ -137,7 +136,7 @@ concrete example, and pointers to deeper documents.
    (AI readers, each given the background of a likely visitor to the repository) read the README cold and report where they stopped, whether they would try it, and
    what pushed them away ([references/visitor-read.md](skills/readme-writer/references/visitor-read.md),
    in Japanese).
-4. The `readme-judge` agent (in claude-harness) reads every language version once with the evidence
+4. The `readme-judge` agent (bundled in `agents/`) reads every language version once with the evidence
    and screenshots, answers a fixed checklist with quoted evidence, checks each claim against the
    repository's code, tries to refute its own findings, and returns one named verdict: Publishable,
    Fix (span-level fixes) or Rewrite. A rewrite runs draft, recheck, a binding final judgment on the

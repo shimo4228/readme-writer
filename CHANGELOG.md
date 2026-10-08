@@ -5,6 +5,9 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- `agents/readme-judge.md` is bundled, with an idempotent `install.sh` that installs the skill and
+  the agent into `~/.claude` and runs `uv sync` (previously the agent had to be fetched from
+  claude-harness).
 - `scripts/readme_render.py`: renders the README through GitHub's Markdown API, styled with a copy of github-markdown-css (an
   approximation of GitHub's look), at
   the README column's width (desktop and mobile, light and dark) and reports screenshots, heading
@@ -27,6 +30,9 @@ All notable changes to this project will be documented in this file.
   `readme-clarity-reviewer`, `codex-review`) is retired; a cross-model opinion is optional through the
   `codex@openai-codex` plugin.
 - `readme_evidence.py` is split into sibling modules and reports the README's size.
+
+### Fixed
+- A `<details>` tag named in inline code no longer counts as a collapsed block.
 
 ## [0.2.0] — 2026-08-20
 

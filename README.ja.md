@@ -23,18 +23,13 @@ readme-writer は、README を書き直したり見直したりして、初め�
 ## 導入
 
 ```bash
-# skill
-mkdir -p ~/.claude/skills ~/.claude/agents
 git clone https://github.com/shimo4228/readme-writer && cd readme-writer
-cp -r skills/readme-writer ~/.claude/skills/readme-writer
-cd ~/.claude/skills/readme-writer && uv sync
-
-# 判定 agent（claude-harness から 1 ファイル）
-curl -o ~/.claude/agents/readme-judge.md \
-  https://raw.githubusercontent.com/shimo4228/claude-harness/main/agents/readme-judge.md
+./install.sh
 ```
 
-Python 3.11 以上と [uv](https://docs.astral.sh/uv/) が要ります。GitHub での見え方（パソコンとスマホの幅、明るい表示と暗い表示）も判定 agent に見せるときは、GitHub CLI にログインし（`gh auth login`）、ブラウザを 1 回入れます（`uv run playwright install chromium`）。これが無ければ、判定は文面だけで行います。[SkillsMP](https://skillsmp.com) のマーケットプレイスから入れる場合（`/skills add shimo4228/readme-writer`）、skill は入りますが、agent は入りません。
+`install.sh` は、skill を `~/.claude/skills/readme-writer` に、判定 agent を `~/.claude/agents/readme-judge.md` に写し、`uv sync` で skill の Python の依存を入れます。すでにある版は `*.bak-<日時>` として残し、`--dry-run` で何をするかだけを見られます。Python 3.11 以上と [uv](https://docs.astral.sh/uv/) が要ります。
+
+GitHub での見え方（パソコンとスマホの幅、明るい表示と暗い表示）も判定 agent に見せるときは、GitHub CLI にログインし（`gh auth login`）、`~/.claude/skills/readme-writer` でブラウザを 1 回入れます（`uv run playwright install chromium`）。これが無ければ、判定は文面だけで行います。[SkillsMP](https://skillsmp.com) のマーケットプレイスから入れる場合（`/skills add shimo4228/readme-writer`）は skill だけが入るので、`agents/readme-judge.md` を `~/.claude/agents/` に自分で写してください。
 
 ## 使い方
 
@@ -71,7 +66,7 @@ MIT
 
 **これは何か。** readme-writer は Claude Code の Agent Skill です（Python、MIT、版は 0.2.0 と [CHANGELOG.md](CHANGELOG.md)（英語）にある未リリースの変更）。repo の人間向けの README と、それを要約する GitHub の About を書き、書き直し、見直し、揃えます。AI だけが読むページを書く llms-txt-writer と対になります。
 
-**要るもの。** Claude Code、Python 3.11 以上、uv、claude-harness の `readme-judge` agent のファイル。任意で、ログイン済みの GitHub CLI と Playwright の Chromium（描画証拠）。Claude Code のプラン以外に有料の API キーは要りません。
+**要るもの。** Claude Code、Python 3.11 以上、uv、`agents/` に同梱した `readme-judge` agent（`install.sh` が skill と agent を一緒に入れます）。任意で、ログイン済みの GitHub CLI と Playwright の Chromium（描画証拠）。Claude Code のプラン以外に有料の API キーは要りません。
 
 **なぜあるか。** README は継ぎ足しで育ちます。リリースのたびに箇条・設計記録の番号・姉妹 repo・造語が増え、初めて来た人には何のプロジェクトか分からなくなります。この skill はそれを戻すためにあり、規則は 1 つです。仕組み・インストール・機能の説明より前に、読者が「この repo は何のためにあるか」を言えること。数えるのはコード、判定するのは LLM、決めるのは人です。
 
@@ -82,7 +77,7 @@ MIT
 1. `scripts/readme_evidence.py`（標準ライブラリだけ）が、判定ではなく証拠を JSON で出します。第一画面の長さと新語、内部への参照、造語の候補、`<details>` の中身、前後に文の無い図、切れたリンクとページ内リンク切れ、内部史の行、生の数値、slop 語、日本語の文末、README の字数です。
 2. `scripts/readme_render.py`（任意。GitHub CLI と Playwright）が、GitHub 自身の Markdown API で描き、github-markdown-css の写し（GitHub の見た目の近似）を当てて README の列幅に収め、パソコンとスマホの幅、明るい表示と暗い表示の描画、見出しの位置、最初の 1 画面の境目、はみ出す要素を出します。
 3. 任意で、人に試してもらうことが目的の改稿では、repo の訪問者の背景を持たせた 3 体の AI の訪問者役が README を読み、どこでやめたか、試すか、何が止めたかを答えます（[references/visitor-read.md](skills/readme-writer/references/visitor-read.md)）。
-4. `readme-judge` agent（claude-harness にあります）が、全言語版を証拠と描画と一緒に 1 回読み、固定のチェックリストに引用付きで答え、記述を repo のコードと照らし、自分の指摘を反証にかけ、名前のついた判定を 1 つ返します。Publishable、Fix（文単位の直し）、Rewrite のどれかです。改稿では、draft、recheck、凍結した本文への拘束力のある最終判定（改稿前との前後比較つき）、最大もう 1 回の recheck の順に回します。
+4. `readme-judge` agent（`agents/` に同梱）が、全言語版を証拠と描画と一緒に 1 回読み、固定のチェックリストに引用付きで答え、記述を repo のコードと照らし、自分の指摘を反証にかけ、名前のついた判定を 1 つ返します。Publishable、Fix（文単位の直し）、Rewrite のどれかです。改稿では、draft、recheck、凍結した本文への拘束力のある最終判定（改稿前との前後比較つき）、最大もう 1 回の recheck の順に回します。
 5. 改稿を頼んだ人が結果を通読します。その通読で見つかった指摘の数を、判定 agent の本当の誤り率として記録します。
 
 **例。**

@@ -11,7 +11,7 @@
 - **Version**: 0.2.0 (2026-08-20; evidence + fresh-context judge redesign) plus unreleased changes in CHANGELOG.md (render evidence, the visible-text / collapsed-floor layout, the visitor read). 0.1.0 (2026-06-08) was the initial lint-based release
 - **Language**: Python >= 3.11. `readme_evidence.py` uses the standard library only; the optional `readme_render.py` needs Playwright (the one runtime dependency) and an authenticated GitHub CLI
 - **Components**: `scripts/readme_evidence.py`, `scripts/readme_render.py`, `references/readme-judge-checklist.md` (+ visual / overview-diagram / ja-register / about / visitor-read references), `tests/`, `fixtures/`, `evals/`
-- **Companion agent** (published in claude-harness, not in this repo): `readme-judge`, the only agent the skill uses
+- **Companion agent**: `readme-judge`, the only agent the skill uses, bundled as `agents/readme-judge.md`; `install.sh` installs the skill and the agent together
 - **Research line**: component skill of the Authorship Strategy line (concept DOI 10.5281/zenodo.20263316)
 - **Grounding ADR**: AKC ADR-0008 "Code-LLM Layering" (concept DOI 10.5281/zenodo.19200726)
 - **Counterpart skill**: llms-txt-writer (AI surface)
