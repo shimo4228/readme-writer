@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+- `scripts/readme_render.py`: renders the README through GitHub's Markdown API, styled with a copy of github-markdown-css (an
+  approximation of GitHub's look), at
+  the README column's width (desktop and mobile, light and dark) and reports screenshots, heading
+  positions, the fold and overflowing elements. The judge answers a visual section (§V) from them.
+  Needs Playwright (now the one runtime dependency) and an authenticated GitHub CLI; optional.
+- Visitor read (`references/visitor-read.md`): for rewrites meant to get people to try a project,
+  three first-time visitors chosen for the repository read each draft and report where they stopped,
+  whether they would try it, and what pushed them away.
+- Overview diagram guidance (`references/overview-diagram.md`) for repositories whose mechanism a
+  reader must understand before starting.
+- The reader-cut agreement test (`scripts/reader_cut*.py`, `evals/reader-cut/`), whose first result
+  stopped the sentence-level arm.
+
+### Changed
+- Layout: the visible text serves people (what the project is, then whatever stands between the reader
+  and a first run); the LLM-read information floor moves to a collapsed section at the end of the
+  README. The judge asks for docs/ once the raw README passes about 15,000 characters.
+- One judge: `readme-judge` now also checks each claim against the repository's code, and runs a
+  before/after comparison in the final judgment. The review panel (`readme-reviewer`,
+  `readme-clarity-reviewer`, `codex-review`) is retired; a cross-model opinion is optional through the
+  `codex@openai-codex` plugin.
+- `readme_evidence.py` is split into sibling modules and reports the README's size.
+
 ## [0.2.0] — 2026-08-20
 
 The lint-based design is replaced by an evidence + fresh-context judge design.

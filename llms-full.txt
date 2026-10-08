@@ -8,10 +8,10 @@
 - **Type**: Agent Skill (Claude Code), with a standalone Python evidence extractor
 - **Author**: Tatsuya Shimomoto (@shimo4228)
 - **License**: MIT
-- **Version**: 0.2.0 (2026-08-20; evidence + fresh-context judge redesign). 0.1.0 (2026-06-08) was the initial lint-based release
-- **Language**: Python >= 3.11, no runtime dependencies (standard library only)
-- **Components**: `scripts/readme_evidence.py`, `references/readme-judge-checklist.md` (+ visual / ja-register / about references), `tests/`, `fixtures/`, `evals/fixtures/`
-- **Companion agents** (published in claude-harness, not in this repo): `readme-judge`, `readme-reviewer`, `readme-clarity-reviewer`
+- **Version**: 0.2.0 (2026-08-20; evidence + fresh-context judge redesign) plus unreleased changes in CHANGELOG.md (render evidence, the visible-text / collapsed-floor layout, the visitor read). 0.1.0 (2026-06-08) was the initial lint-based release
+- **Language**: Python >= 3.11. `readme_evidence.py` uses the standard library only; the optional `readme_render.py` needs Playwright (the one runtime dependency) and an authenticated GitHub CLI
+- **Components**: `scripts/readme_evidence.py`, `scripts/readme_render.py`, `references/readme-judge-checklist.md` (+ visual / overview-diagram / ja-register / about / visitor-read references), `tests/`, `fixtures/`, `evals/`
+- **Companion agent** (published in claude-harness, not in this repo): `readme-judge`, the only agent the skill uses
 - **Research line**: component skill of the Authorship Strategy line (concept DOI 10.5281/zenodo.20263316)
 - **Grounding ADR**: AKC ADR-0008 "Code-LLM Layering" (concept DOI 10.5281/zenodo.19200726)
 - **Counterpart skill**: llms-txt-writer (AI surface)
@@ -26,11 +26,11 @@ READMEs grow by accretion: each release adds a bullet, an ADR number, a sibling 
 
 ## What is the "information floor"?
 
-The floor is the small, non-negotiable set of facts an LLM needs to reconstruct the project from the README text alone (not from images, collapsed blocks, or linked files): (1) an identity sentence readable in isolation; (2) why the project exists, who it is for, and what distinguishes it; (3) canonical facts such as name, stack, status, and for research repos the DOI, how-to-cite, and three to six core concept definitions; (4) exactly one concrete example; (5) a pointer-only link map to deeper docs. If the lead promises an artifact ("the history of how the constitution changed"), the README must provide a reachable destination (link, section, or dated count) in the same change. Everything outside the floor is cut or relocated; the floor must not swell into a disguised llms-full.txt.
+The floor is the small, non-negotiable set of facts an LLM needs to reconstruct the project from the README text alone (not from images or linked files). It lives in a collapsed `<details>` section at the end of the README, which AI assistants that fetch the URL read in full while human visitors skip it: (1) an identity sentence readable in isolation; (2) why the project exists, who it is for, and what distinguishes it; (3) canonical facts such as name, stack, status, and for research repos the DOI, how-to-cite, and three to six core concept definitions; (4) exactly one concrete example; (5) a pointer-only link map to deeper docs. If the lead promises an artifact ("the history of how the constitution changed"), the README must provide a reachable destination (link, section, or dated count) in the same change. Everything outside the floor is cut or relocated; the floor must not swell into a disguised llms-full.txt.
 
 ## How is quality split between code and the LLM?
 
-Following AKC ADR-0008, countable facts are owned by code and contextual judgment by an LLM. `scripts/readme_evidence.py` extracts evidence as JSON: first-screen line count and new-term count, the identity lead, counts of ADR / sibling-repo / docs references, coined-term candidates with occurrence counts, what each `<details>` block contains, whether each figure is followed by prose, badges, slop words and em-dashes, internal-history lines (versions, model swaps), raw numeric claims, and DOI / citation presence. It produces no score, no severity, no threshold, and no failing exit code (exit 0 always; 2 only when the file is missing or oversized). The `readme-judge` agent reads that JSON as one input among several, reads the README once in a fresh context with no access to the rest of the repository, and owns the verdict.
+Following AKC ADR-0008, countable facts are owned by code and contextual judgment by an LLM. `scripts/readme_evidence.py` extracts evidence as JSON: first-screen line count and new-term count, the identity lead, counts of ADR / sibling-repo / docs references, coined-term candidates with occurrence counts, what each `<details>` block contains, whether each figure is followed by prose, badges, slop words and em-dashes, internal-history lines (versions, model swaps), raw numeric claims, and DOI / citation presence. It produces no score, no severity, no threshold, and no failing exit code (exit 0 always; 2 only when the file is missing or oversized). The `readme-judge` agent reads that JSON as one input among several, reads the README once in a fresh context, then checks each claim against the repository's code, and owns the verdict.
 
 ## How does the judge decide?
 
@@ -38,7 +38,7 @@ The judge answers a fixed checklist with one line of quoted evidence per questio
 
 ## What is the revision loop?
 
-Evidence extraction, then the judge as a draft gate. Publishable admits the draft to the review panel; Fix triggers span-level repairs and one re-judgment with the identical question set; Rewrite stops the loop and returns to the author. The loop is capped at two rounds: beyond that, voice drifts toward corporate About-page prose. The panel (`readme-reviewer` for floor recovery, structure, length, visuals; `readme-clarity-reviewer` for the first-contact reading experience, coined-term load, Japanese register, cross-language parity; optionally a cross-model `codex-review`) returns findings only; the verdict belongs to the judge. After panel findings are folded in, a binding re-judgment with freshly generated questions runs on the frozen candidate; any later edit invalidates it. The author's read-through is always the top gate, and the number of issues the author finds after a Publishable verdict is recorded as the judge's true error rate.
+Evidence extraction (and, when available, render evidence), then the judge as a draft gate. For rewrites meant to get people to try a project, three simulated first-time visitors, chosen for the repository, read each draft first and report where they stopped and what pushed them away; wording fixes are made, missing facts go to the author. Publishable moves on; Fix triggers span-level repairs and one recheck with the identical question set; Rewrite stops the loop and returns to the author. The draft loop is capped at two rounds. A binding final judgment with freshly generated questions then runs on the frozen candidate, with a before/after comparison against the pre-rewrite render run twice in swapped order; a Fix there gets span repairs and at most one recheck with the final question set. The judge also checks each claim against the repository's code. The author's read-through is always the top gate, and the number of issues the author finds after the final verdict is recorded as the judge's true error rate.
 
 ## Why does the skill produce no quality score?
 
@@ -46,7 +46,7 @@ README quality (human hook, value proposition, narrative) is a semantic judgment
 
 ## What does the skill say about figures and visuals?
 
-Prose walls are compressed into scannable structure, not into images. Only genuinely graph-shaped content (relations, multi-branch flows) becomes a diagram, preferably Mermaid in top-down orientation; linear three-step processes stay as lists. Every figure carries a one-sentence text equivalent, since text-only extractors and screen readers skip diagrams. Nothing load-bearing lives inside raster images or collapsed `<details>` blocks. Badges are limited to two to four high-signal ones.
+Prose walls are compressed into scannable structure, not into images. Only genuinely graph-shaped content (relations, multi-branch flows) becomes a diagram, preferably Mermaid in top-down orientation; linear three-step processes stay as lists. Every figure carries a one-sentence text equivalent, since text-only extractors and screen readers skip diagrams. Nothing load-bearing lives inside raster images; a collapsed `<details>` section holds only the LLM-read floor at the end, or secondary bulk such as long option tables. Badges are limited to two to four high-signal ones.
 
 ## What about Japanese READMEs?
 
